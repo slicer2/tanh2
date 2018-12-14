@@ -1,0 +1,342 @@
+\documentclass[conference]{IEEEtran}
+%\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amsthm, amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+    
+ \newcommand{\vect}[1]{\mathbf{#1}}
+    
+\begin{document}
+
+\title{A Closed-form Formula for MMSE Decoding of Binary Linear Block Code
+%\thanks{Identify applicable funding agency here. If none, delete this.}
+%}
+%
+%\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+%\and
+%\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+%\and
+%\IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+%\and
+%\IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+%\and
+%\IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+%\and
+%\IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address}
+}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a closed-form formula when the MMSE criteria, which is equivalent to the MAP criteria, is applied to decoding binary linear block codes. The formula provides an interesting perspective to the role the parity check matrix plays in decoding. From this formula we readily derive the Belief Propagation algorithm for MMSE decoding. Unlike the version using the MAP critera, BP algorithm for MMSE has a uniform iteration regardless of the channel.
+\end{abstract}
+
+\begin{IEEEkeywords}
+linear block code, MAP, MMSE, belief propagation
+\end{IEEEkeywords}
+
+\section{Introduction}
+Conventionally a binary linear block code is specified by a $k\times n$ generator matrix $G$ in the binary field $\{0,1\}$, such that message $\vect{c}=c_1\cdots c_k$ is encoded into a code word $\vect{b} = b_1\cdots b_n$ through
+\begin{align}
+\vect{b} = \vect{c}G
+\end{align}
+Such a code word $\vect{b}$ will satisfy the parity check condition
+\begin{align}
+\vect{b}H^T=0,
+\end{align}
+where $H$ is the associated $(n-k)\times n$ parity check matrix. When $G$ can be paritioned as $G=\begin{bmatrix}I &P\end{bmatrix}$, the code is systematic and $H = \begin{bmatrix}P^T & I\end{bmatrix}$. In what follows we assume the code is systematic only for simplicity. Conclusions are applicable to non-systematic codes as well.
+
+The rows of $H$ span a vector space that is denoted as $\mathrm{span}(H)$. Given any row vector $\vect{h}$ from $\mathrm{span}(H)$, its $i$-th component (from the binary field $\{0,1\}$) is denoted as $h_i$. We use $\vect{e}_i$ to denote the vector whose $i$-th component is $1$ and all the other components are $0$. Two vectors can be added together componentwise. Such addition is denoted with $\oplus$. A vector can be added to a vector space. The result is a set obtained from adding that vector to every vector in the space. For example, $\mathrm{span}(H)\oplus \vect{e}_i$ stands for a set obtained by adding $\vect{e}_i$ to every vector in $\mathrm{span}(H)$.
+
+Further, we assume antipodal signaling is employed such that the actually transmitted bits are represented by $\pm 1$, with the mapping rule: $0\rightarrow 1$ and $1\rightarrow -1$. Under antipodal signaling, bit multiplication is equivalent to binary field addition -- a useful property for the development in this article.
+
+Given $\vect{b}$, a memory-less channel (Gaussian, BSC, BEC, for example), and the observations $\vect{y}=y_1y_2\cdots y_n$, MAP decoding of binary linear block code is based on the LLR
+\begin{align}
+\Lambda_i = \log \frac{P(\vect{y}|b_i=1)}{P(\vect{y}|b_i=-1)}.
+\end{align}
+$b_i$ is decoded as $1$ if $\Lambda_i>0$; or $-1$ otherwise. Another conceivable decoding criteria is by computing
+\begin{align}
+E[b_i|\vect{y}],  \label{MMSEDecoding}
+\end{align}
+$b_i$ is decoded as $1$ if $E[b_i|\vect{y}]>0$; or $-1$ otherwise. Because
+\begin{align}
+\hat{b}_i = E[b_i|\vect{y}]
+\end{align}
+minimizes
+\begin{align*}
+E[|\hat{b}_i-b_i|^2]
+\end{align*}
+we can call this type of decoding the MMSE decoding. It is shown below that MMSE decoding is equivalent to MAP decoding though MMSE decoding enjoys a closed form expression: If we define
+\begin{align}
+E_i = E[b_i|y_i]
+\end{align}
+we can write out (\ref{MMSEDecoding}) in terms of $E_i$. We will give a few examples. The expression also leads to a different form of the famous sum-product algorithm for iterative decoding.
+
+\section{The Closed Form}
+Given the observation $y$ as the result of feeding a bit $b$ through the channel, we have single bit posterior expectation
+\begin{align}
+E[b|y] = \frac{P(y|b=1)-P(y|b=-1)}{P(y|b=1)+P(y|b=-1)} \label{e:single_observation_mmse}
+\end{align}
+Given a code word $\vect{b} = b_1b_2\cdots b_n$, its corresponding observation $\vect{y}$, and the bitwise posterior expecation
+\begin{align}
+E_i = E[b_i|y_i],
+\end{align}
+we can show
+\begin{align}
+E[b_i|\vect{y}] = \frac{\sum_{\vect{h}\in \mathrm{span} (H)\oplus \vect{e}_i}\prod_{i\atop h_i=1}E_i}{\sum_{\vect{h}\in \mathrm{span} (H)}\prod_{i\atop h_i=1}E_i}. \label{e:closedform}
+\end{align}
+
+\begin{proof}
+Similar to (\ref{e:single_observation_mmse})
+\begin{align}
+E[b_i|\vect{y}] &= \frac{P(\vect{y}|b_i=1)-P(\vect{y}|b_i=-1)}{P(\vect{y}|b_i=1)+P(\vect{y}|b_i=-1)}\\
+&=\frac{\sum_{b_1}P(y_1|b_1)\cdots\sum_{b_i}b_iP(y_i|b_i)\cdots\sum_{b_k}P(y_k|b_k)P(y_{k+1}|b_{k+1})\cdots P(y_n|b_n)}{\sum_{b_1}P(y_1|b_1)\cdots\sum_{b_i}P(y_i|b_i)\cdots\sum_{b_k}P(y_k|b_k)P(y_{k+1}|b_{k+1})\cdots P(y_n|b_n)}. \label{mmse_conditional_probability}
+\end{align}
+Summatoin is over $b_1, \ldots, b_k$ as the code is systematic. Let
+\begin{align}
+N_j = P(y_j|b_j=1)-P(y_j|b_j=1), D_j = P(y_j|b_j=1)+P(y_j|b_j=-1)
+\end{align}
+then
+\begin{align}
+P(y_j|b_j=1) = (D_j+N_j)/2, P(y_j|b_j=-1) = (D_j-N_j)/2
+\end{align}
+or more compactly
+\begin{align}
+P(y_j|b_j) = (D_j+b_jN_j)/2 \label{conditional_probability_nd}
+\end{align}
+Plug (\ref{conditional_probability_nd}) into the denominator of (\ref{mmse_conditional_probability}), we have
+\begin{align}
+&\text{Denominator}\\
+=&\sum_{b_1}\frac{D_1+b_1N_1}{2}\cdots\sum_{b_i}\frac{D_i+b_iN_i}{2}\cdots\sum_{b_k}\frac{D_k+b_kN_k}{2}\frac{D_{k+1}+b_{k+1}N_{k+1}}{2}\cdots\frac{D_n+b_nN_n}{2}
+\end{align}
+Expanding the expression we get a posynomial in $D_j$, $b_j$ and $N_j$. Therefore we may write it as
+\begin{align}
+&\text{Denominator}\\
+=&2^{-n}\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\in \{0,1\}^n}\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1}b_\ell N_\ell
+\end{align}
+Split $\{0,1\}^n=H\cup H^c$ and evaluate them separately
+\begin{align}
+&\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\in H}\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h(\ell) = 1}b_\ell N_\ell\\
+=&2^k\sum_{\vect{h}\in H}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)
+\end{align}
+The last step is true because
+\begin{align}
+\prod_{\ell\atop h(\ell) = 1}b_\ell =1, \forall h\in H
+\end{align}
+But $\forall h \in H^c$
+\begin{align}
+\prod_{\ell\atop h(\ell) = 1}b_\ell =b_{\ell_1}\cdots b_{\ell_m}\neq 1
+\end{align}
+for some $m>0$ and $1\le \ell_1 < \cdots < \ell_m\le k$. Therefore
+\begin{align}
+\sum_{b_1}\cdots\sum_{b_k}b_{\ell_1}\cdots b_{\ell_m} = 2^{k-m}\left(\sum_{b_{\ell_1}}b_{\ell_1}\right)\cdots\left(\sum_{b_{\ell_m}}b_{\ell_m}\right)=0
+\end{align}
+Consequently
+\begin{align}
+&\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\in H^c}\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1}b_\ell N_\ell\\
+=&\sum_{\vect{h}\in H^c}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)\left(\sum_{b_1}\cdots\sum_{b_k}\prod_{\ell\atop h_\ell=1}b_\ell\right)\\
+=&0
+\end{align}
+Therefore
+\begin{align}
+\text{Denominator}=2^{k-n}\sum_{\vect{h}\in H}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)
+\end{align}
+The numerator can be written as
+\begin{align}
+&\text{Numerator}\\
+=&\sum_{b_1}\frac{D_1+b_1N_1}{2}\cdots\sum_{b_i}b_i\frac{D_i+b_iN_i}{2}\cdots\sum_{b_k}\frac{D_k+b_kN_k}{2}\frac{D_{k+1}+b_{k+1}N_{k+1}}{2}\cdots\frac{D_n+b_nN_n}{2}
+\end{align}
+Expanding it, we get a posynomial
+\begin{align}
+&\text{Numerator}\\
+=&2^{-n}\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\in \{0,1\}^n}b_i\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1}b_\ell N_\ell
+\end{align}
+From this expression, we can find, in a similar way
+\begin{align}
+&\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\in H\oplus \vect{e}_i}b_i\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1}b_\ell N_\ell\\
+=&2^{k-n}\sum_{\vect{h}\in H\oplus \vect{e}_i}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)
+\end{align}
+and
+\begin{align}
+&\sum_{b_1}\cdots\sum_{b_k}\sum_{\vect{h}\not\in H\oplus\vect{e}_i}b_i\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1}b_\ell N_\ell\\
+=&0
+\end{align}
+So
+\begin{align}
+\text{Numerator}=2^{k-n}\sum_{\vect{h}\in H\oplus\vect{e}_i}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)
+\end{align}
+We can finally write
+\begin{align}
+E[b_i|\vect{y}] &= \frac{\sum_{\vect{h}\in H\oplus\vect{e}_i}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)}{\sum_{\vect{h}\in H}\left(\prod_{j\atop h_j = 0}D_j\prod_{\ell\atop h_\ell = 1} N_\ell\right)}
+\end{align}
+Dividing numerator and denominator by $\prod_{j=1}^nD_j$, we get
+\begin{align}
+E[b_i|\vect{y}] &=\frac{\sum_{\vect{h}\in H\oplus\vect{e}_i}\prod_{\ell\atop h_\ell = 1} \frac{N_\ell}{D_\ell}}{\sum_{\vect{h}\in H}\prod_{\ell\atop h_\ell = 1} \frac{N_\ell}{D_\ell}}\\
+&=\frac{\sum_{\vect{h}\in H\oplus\vect{e}_i}\prod_{\ell\atop h_\ell = 1} E[y_\ell|b_\ell]}{\sum_{\vect{h}\in H}\prod_{\ell\atop h_\ell = 1} E[y_\ell|b_\ell]}
+\end{align}
+\end{proof}
+Remark: For all $i=1,2,\ldots,n$, $E[b_i|\vect{y}]$ has the same denominator, consisting of all combinations $E_1$ through $E_n$, whose products evaluate to $1$. The numerator, on the other hand, consists of all combinations whose products evaluate to $E_i$. If we write the denominator as a polynomial of $E_i$
+\begin{align*}
+\mathrm{Denominator}=E_iQ_1+Q_2
+\end{align*}
+where posynomials $Q_1$ and $Q_2$ do not have $E_i$ in their respective expressions. The numerator, according to the closed form, is obtained as
+\begin{align}
+\mathrm{Numerator} &= \mathrm{Denominator} \times E_i\label{e:numerator}\\
+&=E_iQ_2 + Q_1.
+\end{align}
+Therefore
+\begin{align*}
+E[b_i|\vect{y}] &= \frac{E_iQ_2+Q_1}{E_iQ_1+Q_2}\\
+&=\frac{E_i+\frac{Q_1}{Q_2}}{1+E_i\frac{Q_1}{Q_2}}\\
+&=\tanh\left(\tanh^{-1}(E_i)+\tanh^{-1}\left(\frac{Q_1}{Q_2}\right)\right)
+\end{align*}
+It is clear from (\ref{e:closedform}) that all MMSE shares the same denominator. Eq. (\ref{e:numerator}) also implies that the numerator is related to the denominator simply through multiplying $E_i$. In other words, the denominator posynomial is fundamental to MMSE decoding. For this reason, we refer to it as the characteristic posynomial of the linear block code $H$.
+
+\section{Belief Propogation}
+Belief propogation using MMSE representation has the following iterative form:
+
+From variable node $a$ to factor node $\alpha$:
+\begin{align}
+m_{a\rightarrow\alpha}^{(n)}=\tanh\left(\tanh^{-1}(E_a)+\sum_{\beta\in F(a)\atop \beta \neq \alpha}\tanh^{-1}(M_{\beta\rightarrow  a}^{(n-1)})\right), \label{e:n2f}
+\end{align}
+and from factor node $\alpha$ to variable node $a$:
+\begin{align}
+M_{\alpha\rightarrow a}^{(n)} = \prod_{b\in N(\alpha)\atop b \neq a}m_{b\rightarrow \alpha}^{(n)}. \label{e:f2n}
+\end{align}
+with
+\begin{align}
+M_{\beta\rightarrow a}^{(0)} = 0.
+\end{align}
+After $n$ iterations ($n$ being sufficiently large), MMSE of node $a$ is recovered as
+\begin{align}
+E[a|\vect{y}] = \tanh\left(\tanh^{-1}(E_a)+\sum_{\beta\in F(a)}\tanh^{-1}(M_{\beta\rightarrow  a}^{(n)})\right),
+\end{align}
+The BP algorithm does not guarantee to converge to the correct value of $E[a|\vect{y}]$ for cyclic factor graphs. We show the proof here that convergence is guaranteed for acyclic factor graphs by induction on $p$, the number of parity checks. We use $H_p$ (resp. $H_{p-1}$) to denote the $H$ matrix from $p$ (resp. $p-1$) parity checks. If $p=1$, as shown in Fig. \ref{f:p=1}, convergence is achieved after one iteration:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.15\textwidth]{p1}
+\caption{Factor graph when $p=1$.}
+\label{f:p=1}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.4\textwidth]{p}
+\caption{Factor graph with $p$ factor nodes.}
+\label{f:p=1}
+\end{figure}
+Assume it is correct up to $p-1$, now add one more factor node $\gamma$. Assume $\gamma$ connects to variable node $x, x_1, x_2, \ldots, x_g$ and $x$ is the only common variable node connected to the other $p-1$ factor nodes -- a necessay consequence if the factor graph derived from the $p$ parity checks has no cycle. Follow iterations (\ref{e:n2f}) and (\ref{e:f2n}), we have
+\begin{align*}
+M_{\gamma\rightarrow x}^{(1)} = E_{x_1}E_{x_2}\cdots E_{x_g}.
+\end{align*}
+In the iteration 2, the message from $x$ towards factor nodes other than $\gamma$ will take the form
+\begin{align*}
+&\tanh\left(\tanh^{-1}(E_x) + \tanh^{-1}(M_{\gamma\rightarrow x})+\cdots \right)\\
+=&\tanh\left(\tanh^{-1}\left(\frac{E_x + M_{\gamma\rightarrow x}}{1+E_xM_{\gamma\rightarrow x}}\right)+\cdots\right)
+\end{align*}
+This is equivalent to the graph with $p-1$ factor nodes, except all occurences of $E_x$ in the messages are to be replaced by
+\begin{align*}
+\frac{E_x + M_{\gamma\rightarrow x}}{1+E_xM_{\gamma\rightarrow x}}
+\end{align*}
+By induction BP computes the correct MMSE for any variable node in the previous graph with $p-1$ factor nodes. Suppose it is given by
+\begin{align*}
+\frac{E_xQ_2+Q_1}{E_xQ_1+Q_2}
+\end{align*}
+where $Q_1, Q_2$ are posynomials not involving $E_x$. With the additional factor node, BP will actually compute
+\begin{align*}
+&\frac{\frac{E_x + M_{\gamma\rightarrow x}}{1+E_xM_{\gamma\rightarrow x}}Q_2+Q_1}{\frac{E_x + M_{\gamma\rightarrow x}}{1+E_xM_{\gamma\rightarrow x}}Q_1+Q_2}\\
+% =&\frac{E_x(Q_2+M_{\gamma\rightarrow x}Q_1)+(Q_1+M_{\gamma\rightarrow x}Q_2)}{E_x(Q_1+M_{\gamma\rightarrow x}Q_2)+(Q_2+M_{\gamma\rightarrow x}Q_1)}\\
+=&\frac{E_xQ_2+Q_1+M_{\gamma\rightarrow x}Q_2 + E_xM_{\gamma\rightarrow x}Q_1}{E_xQ_1+Q_2+M_{\gamma\rightarrow x}Q_1 + E_xM_{\gamma\rightarrow x}Q_2}\\
+=&\frac{E_xQ_2+Q_1+E_{x_1}E_{x_2}\cdots E_{x_g}Q_2 + E_xE_{x_1}E_{x_2}\cdots E_{x_g}Q_1}{E_xQ_1+Q_2+E_{x_1}E_{x_2}\cdots E_{x_g}Q_1 + E_xE_{x_1}E_{x_2}\cdots E_{x_g}Q_2}
+\end{align*}
+This is the correct MMSE with $p$ factors. Its denominator is the characteristic posynomial of $H_p$, consisting of $2^{p-1}$ monomials corresponding to $\mathrm{span}(H_{p-1})$ (i.e., $E_xQ_1+Q_2$), plus another $2^{p-1}$ monomials (i.e., $E_{x_1}E_{x_2}\cdots E_{x_g}Q_1 + E_xE_{x_1}E_{x_2}\cdots E_{x_g}Q_2$) as a consequence of adding one additional parity check $\vect{e}_x+\sum_{i=1}^g\vect{e}_i$ to $\mathrm{span}(H_{p-1})$ to form $\mathrm{span}(H_p)$. The numerator can be similarly checked or simply by noting it is $E_x$ multiplied to the denominator. For any variable node from $x_1, x_2, \ldots, x_g$, we check the MMSE of $x_1$ correctly computed, without loss of generality. $x_1$ will receive a message of the form
+\begin{align*}
+m_{x\rightarrow\gamma}E_{x_2}\cdots E_{x_g}
+\end{align*}
+where $m_{x\rightarrow\gamma}$ is the MMSE of $x$ given $p-1$ parity checks. In other words
+\begin{align}
+m_{x\rightarrow\gamma} = \frac{E_xQ_2+Q_1}{E_xQ_1+Q_2}
+\end{align}
+where 
+\begin{align*}
+E_xQ_1+Q_2
+\end{align*}
+is the characteristic posynomial of $H_{p-1}$. Node $x_1$ will then form the MMSE of itself
+\begin{align}
+&\tanh\left(\tanh^{-1}(E_{x_1})+\tanh^{-1}\left(m_{x\rightarrow\gamma}E_{x_2}\cdots E_{x_g}\right)\right)\\
+=&\frac{E_{x_1}+\frac{E_xQ_2+Q_1}{E_xQ_1+Q_2}E_{x_2}\cdots E_{x_g}}{1+E_{x_1}E_{x_2}\cdots E_{x_g}\frac{E_xQ_2+Q_1}{E_xQ_1+Q_2}}\\
+=&\frac{E_{x_1}(E_xQ_1+Q_2)+(E_xQ_2+Q_1)E_{x_2}\cdots E_{x_g}}{E_xQ_1+Q_2+E_{x_1}\cdots E_{x_g}(E_xQ_2+Q_1)}
+\end{align}
+One can verify the denominator is indeed the characteristic posynomial of $H_p$ and the numerator is correctly formed by multiplying $E_{x_1}$ to the denominator.
+
+\section*{Acknowledgment}
+
+The preferred spelling of the word ``acknowledgment'' in America is without 
+an ``e'' after the ``g''. Avoid the stilted expression ``one of us (R. B. 
+G.) thanks $\ldots$''. Instead, try ``R. B. G. thanks$\ldots$''. Put sponsor 
+acknowledgments in the unnumbered footnote on the first page.
+
+\section*{References}
+
+Please number citations consecutively within brackets \cite{b1}. The 
+sentence punctuation follows the bracket \cite{b2}. Refer simply to the reference 
+number, as in \cite{b3}---do not use ``Ref. \cite{b3}'' or ``reference \cite{b3}'' except at 
+the beginning of a sentence: ``Reference \cite{b3} was the first $\ldots$''
+
+Number footnotes separately in superscripts. Place the actual footnote at 
+the bottom of the column in which it was cited. Do not put footnotes in the 
+abstract or reference list. Use letters for table footnotes.
+
+Unless there are six authors or more give all authors' names; do not use 
+``et al.''. Papers that have not been published, even if they have been 
+submitted for publication, should be cited as ``unpublished'' \cite{b4}. Papers 
+that have been accepted for publication should be cited as ``in press'' \cite{b5}. 
+Capitalize only the first word in a paper title, except for proper nouns and 
+element symbols.
+
+For papers published in translation journals, please give the English 
+citation first, followed by the original foreign-language citation \cite{b6}.
+
+\begin{thebibliography}{00}
+\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
+\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
+\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
+\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
+\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
+\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
+\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+\end{thebibliography}
+\vspace{12pt}
+\color{red}
+IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
+
+\end{document}
